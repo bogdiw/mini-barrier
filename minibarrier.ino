@@ -1,5 +1,6 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
+#include <Servo.h>
 
 // lcd obj
 LiquidCrystal_I2C lcd(0x27,16,2);
@@ -11,7 +12,14 @@ const int buttonPin = 11;
 const int echoPin = 10;
 const int trigPin = 9;
 
+const int servoPin = 7;
+Servo bariera;
+
 const float DIST_PRAG = 15.0;
+const int MAX_CARS = 10;
+
+int contorMasini = 0;
+bool masinaDetectata = false;
 
 void setup() {
   lcd.init();
@@ -24,8 +32,11 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
+  bariera.attach(servoPin);
+  bariera.write(0);
+
   lcd.setCursor(0, 0);
-  lcd.print("Sistem pornit...");
+  lcd.print("Mini Barrier...");
   delay(1000);
 }
 
@@ -42,7 +53,6 @@ void loop() {
 
   float distance = duration * 0.034 / 2;
 
-  // Afișăm pe LCD
   lcd.setCursor(0, 0);
   lcd.print("Dist: ");
   lcd.print(distance);
@@ -51,22 +61,48 @@ void loop() {
 
   lcd.setCursor(0, 1);
 
-  if (buttonState == HIGH) {
+  if (buttonState == HIGH && contorMasini > 0) {
     digitalWrite(greenLED, HIGH);
     digitalWrite(redLED, LOW);
-    lcd.print("Mod: MANUAL      ");
+    bariera.write(90);
+    lcd.setCursor(0, 1);
+    lcd.print("Car out...    ");
+
+    delay(2000);
+    contorMasini--;
+    bariera.write(0);
   } else {
-    // Automat, pe baza senzorului
-    if (distance < DIST_PRAG) {
+    if (distance < DIST_PRAG && contorMasini < MAX_CARS) {
       digitalWrite(greenLED, HIGH);
       digitalWrite(redLED, LOW);
-      lcd.print("Mod: AUTO - OK   ");
+      bariera.write(90);
+      lcd.setCursor(0, 1);
+      lcd.print("Car in...      ");
+
+      delay(2000);
+      contorMasini++;
+      bariera.write(0);
+      masinaDetectata = true;
     } else {
-      digitalWrite(greenLED, LOW);
-      digitalWrite(redLED, HIGH);
-      lcd.print("Mod: AUTO - STOP ");
+      if (contorMasini >= MAX_CARS) {
+        digitalWrite(greenLED, LOW);
+        digitalWrite(redLED, HIGH);
+        bariera.write(0);
+        lcd.setCursor(0, 1);
+        lcd.print("FULL! STOP       ");
+      } else {
+        digitalWrite(greenLED, LOW);
+        digitalWrite(redLED, HIGH);
+        bariera.write(0);
+        lcd.setCursor(0, 1);
+        lcd.print("Capacity: ");
+        lcd.print(contorMasini);
+        lcd.print("/");
+        lcd.print(MAX_CARS);
+        lcd.print("   ");
+      }
     }
   }
 
-  delay(100);
+  delay(300);
 }
