@@ -17,7 +17,6 @@ const float DIST_PRAG = 15.0;
 const int MAX_CARS = 10;
 
 int carCounter = 0;
-bool carDetected = false;
 volatile bool buttonPressed = false;
 
 void setup() {
@@ -98,7 +97,6 @@ void loop() {
       delay(2000);
       carCounter++;
       setServoAngle(90);
-      carDetected = true;
     } else {
       if (carCounter >= MAX_CARS) {
         digitalWrite(greenLED, LOW);
