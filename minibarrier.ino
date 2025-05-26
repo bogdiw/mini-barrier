@@ -13,7 +13,8 @@ const int trigPin = 6;
 
 const int servoPin = 9;
 
-const float DIST_PRAG = 15.0;
+const float MIN_PRAG = 6.0;
+const float MAX_PRAG = 7.5;
 const int MAX_CARS = 10;
 
 int carCounter = 0;
@@ -87,7 +88,7 @@ void loop() {
     setServoAngle(90);
     buttonPressed = false;
   } else {
-    if (distance < DIST_PRAG && carCounter < MAX_CARS) {
+    if (distance < MAX_PRAG && distance > MIN_PRAG && carCounter < MAX_CARS) {
       digitalWrite(greenLED, HIGH);
       digitalWrite(redLED, LOW);
       lcd.setCursor(0, 1);
